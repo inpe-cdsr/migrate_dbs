@@ -30,8 +30,18 @@ def get_dfs_from_csv_files():
     return df_collection, df_item
 
 
-df_collection, df_item = get_dfs_from_db()
-# df_collection, df_item = get_dfs_from_csv_files()
+# df_collection, df_item = get_dfs_from_db()
+df_collection, df_item = get_dfs_from_csv_files()
+
+
+##################################################
+# save the dfs to csv files
+##################################################
+
+# df_collection.to_csv('data/collection.csv', index=False)
+# df_item.to_csv('data/item.csv', index=False)
+
+# logging.info('Dataframes have been saved sucessfully.\n')
 
 
 ##################################################
@@ -43,6 +53,15 @@ logging.info('*                 df_collection                  *')
 logging.info('**************************************************')
 
 # logging.info(f'before - df_collection: {df_collection} \n')
+
+# rename column
+df_collection.rename(columns={'id': 'name'}, inplace=True)
+
+# create `id` column based on the index row value
+df_collection["id"] = df_collection.index + 1
+
+# put `id` column as the first column
+df_collection = df_collection[ ['id'] + [ col for col in df_collection.columns if col != 'id' ] ]
 
 df_collection['start_date'] = to_datetime(df_collection['start_date']).dt.date
 df_collection['end_date'] = to_datetime(df_collection['end_date']).dt.date
@@ -65,6 +84,15 @@ logging.info('**************************************************')
 
 # logging.info(f'before - df_item: {df_item} \n')
 
+# rename column
+df_item.rename(columns={'id': 'name'}, inplace=True)
+
+# create `id` column based on the index row value
+df_item["id"] = df_item.index + 1
+
+# put `id` column as the first column
+df_item = df_item[ ['id'] + [ col for col in df_item.columns if col != 'id' ] ]
+
 df_item['datetime'] = to_datetime(df_item['datetime'])
 df_item['date'] = to_datetime(df_item['date']).dt.date
 
@@ -85,13 +113,3 @@ df_item['tr_longitude'] = df_item['tr_longitude'].astype(float)
 df_item['tr_latitude'] = df_item['tr_latitude'].astype(float)
 
 logging.info(f'df_item: \n{df_item.head()} \n\n')
-
-
-##################################################
-# save the dfs to csv files
-##################################################
-
-df_collection.to_csv('data/collection.csv', index=False)
-df_item.to_csv('data/item.csv', index=False)
-
-logging.info('Dataframes have been saved sucessfully.\n')
