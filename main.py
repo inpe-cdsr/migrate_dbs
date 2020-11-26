@@ -37,6 +37,14 @@ def fix_assets(row):
     return dumps(new_assets)
 
 
+def generate_collection_id_column(collection_name, df_collection):
+    # get the collection from dataframe based on name
+    collection = df_collection[(df_collection.name == collection_name)]
+
+    # get the collection id and return
+    return collection.iloc[0]['id']
+
+
 class MigrateDBs():
 
     def __init__(self):
@@ -75,7 +83,7 @@ class MigrateDBs():
                     ' files have been saved sucessfully.\n')
 
     ##################################################
-    # df_collection
+    # df_collection and df_item
     ##################################################
 
     def __configure_df_collection(self):
@@ -107,9 +115,18 @@ class MigrateDBs():
         logging.info(f'df_collection: \n{self.df_collection} \n')
         # logging.info(f'df_collection.dtypes: \n{self.df_collection.dtypes} \n')
 
-    ##################################################
-    # df_item
-    ##################################################
+    def __fix_df_item_columns_order(self):
+        # get columns
+        columns = self.df_item.columns.tolist()
+
+        # remove 'collection_id' column in the final
+        columns.remove('collection_id')
+
+        # add column 'collection_id' in the third position
+        columns = columns[:2] + ['collection_id'] + columns[2:]
+
+        # reorder columns
+        self.df_item = self.df_item[columns]
 
     def __configure_df_item(self):
         logging.info('**************************************************')
@@ -152,11 +169,19 @@ class MigrateDBs():
         # fix `aseets` column, merge `thumbnail` in `assets`
         self.df_item['assets'] = self.df_item[['thumbnail', 'assets']].apply(fix_assets, axis=1)
 
-        # delete unnecessary column
+        # generate collection_id column
+        self.df_item['collection_id'] = self.df_item["collection"].apply(
+            lambda collection: generate_collection_id_column(collection, self.df_collection)
+        )
+
+        # delete unnecessary columns
         del self.df_item['thumbnail']
+        # del self.df_item['collection']
+
+        self.__fix_df_item_columns_order()
 
         # logging.info(f'df_item: \n{self.df_item.head()} \n\n')
-        logging.info(f'df_item: \n{self.df_item[["name", "collection", "assets"]].head()}\n')
+        logging.info(f'df_item: \n{self.df_item[["name", "collection_id", "collection", "assets"]].head()}\n')
 
     ##################################################
     # main
