@@ -6,7 +6,7 @@ from pandas import read_csv, to_datetime
 
 from modules.environment import DATA_PATH
 from modules.logging import logging
-from modules.model import MySQLConnection
+from modules.model import MySQLConnection, PostgreSQLConnection
 
 
 def fix_assets(row):
@@ -47,21 +47,21 @@ def generate_collection_id_column(collection_name, df_collection):
 
 class MigrateDBs():
 
-    def __init__(self):
-        self.__get_dfs_from_db()
-        self.__get_dfs_from_csv_files()
+    # def __init__(self):
+        # PostgreSQL connection
+        # self.db_postgres = PostgreSQLConnection()
 
     ##################################################
     # get the dataframes
     ##################################################
 
-    def __get_dfs_from_db(self):
-        # database connection
-        self.db_mysql = MySQLConnection()
+    def __get_dfs_from_mysqldb(self):
+        # MySQL connection
+        db_mysql = MySQLConnection()
 
         # get the dfs from database
-        self.df_collection = self.db_mysql.select_from_collection()
-        self.df_item = self.db_mysql.select_from_item()
+        self.df_collection = db_mysql.select_from_collection()
+        self.df_item = db_mysql.select_from_item()
 
         # save the dataframes in CSV files
         self.__save_dfs()
@@ -72,15 +72,25 @@ class MigrateDBs():
         self.df_item = read_csv(DATA_PATH + item_file_name)
 
     ##################################################
-    # save the dataframes in CSV files
+    # other
     ##################################################
 
     def __save_dfs(self, collection_file_name='collection.csv', item_file_name='item.csv'):
+        """Save the dataframes in CSV files"""
+
         self.df_collection.to_csv(DATA_PATH + collection_file_name, index=False)
         self.df_item.to_csv(DATA_PATH + item_file_name, index=False)
 
         logging.info(f'`{collection_file_name}` and `{item_file_name}`'
                     ' files have been saved sucessfully!\n')
+
+    def __postgresql__delete_from_tables(self):
+        """Clear the tables in the PostgreSQL database"""
+
+        self.db_postgres.delete_from_table('collections')
+        self.db_postgres.delete_from_table('items')
+
+        logging.info(f'`collections` and `items` tables have been cleared sucessfully!\n')
 
     ##################################################
     # df_collection and df_item
@@ -183,23 +193,36 @@ class MigrateDBs():
         # logging.info(f'df_item: \n{self.df_item.head()} \n\n')
         logging.info(f'df_item: \n{self.df_item[["name", "collection_id", "collection", "assets"]].head()}\n')
 
-    ##################################################
-    # main
-    ##################################################
-
-    def main(self):
+    def __configure_dataframes(self):
+        # configure dataframes
         self.__configure_df_collection()
         self.__configure_df_item()
 
         # save a new version of the dataframes after modifications
         self.__save_dfs(
-            collection_file_name='collection_modified.csv',
-            item_file_name='item_modified.csv'
+            collection_file_name='collection_configured.csv',
+            item_file_name='item_configured.csv'
         )
 
-        # logging.info('**************************************************')
-        # logging.info('*                      main                      *')
-        # logging.info('**************************************************')
+    ##################################################
+    # main
+    ##################################################
+
+    def main(self):
+        # self.__get_dfs_from_mysqldb()
+        # self.__get_dfs_from_csv_files()
+        # self.__configure_dataframes()
+
+        self.__get_dfs_from_csv_files(
+            collection_file_name='collection_configured.csv',
+            item_file_name='item_configured.csv'
+        )
+
+        logging.info(f'df_collection: \n{self.df_collection} \n')
+        logging.info(f'df_item: \n{self.df_item[["name", "collection_id", "collection", "assets"]].head()}\n')
+
+        # clear tables
+        # self.__postgresql__delete_from_tables()
 
 
 if __name__ == "__main__":

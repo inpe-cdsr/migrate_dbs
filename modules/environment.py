@@ -18,8 +18,8 @@ MYSQL_PORT = int(os_environ_get('MYSQL_PORT', 9004))
 MYSQL_DATABASE = os_environ_get('MYSQL_DATABASE', 'catalog_rubi')
 
 # Postgres connection
-# POSTGRES_USER = os_environ_get('POSTGRES_USER', 'root')
-# POSTGRES_PASSWORD = os_environ_get('POSTGRES_PASSWORD', 'password')
-# POSTGRES_HOST = os_environ_get('POSTGRES_HOST', 'localhost')
-# POSTGRES_PORT = int(os_environ_get('POSTGRES_PORT', 9004))
-# POSTGRES_DATABASE = os_environ_get('POSTGRES_DATABASE', 'catalog')
+# PGUSER = os_environ_get('PGUSER', 'root')
+# PGPASSWORD = os_environ_get('PGPASSWORD', 'password')
+# PGHOST = os_environ_get('PGHOST', 'localhost')
+# PGPORT = int(os_environ_get('PGPORT', 9004))
+# PGDATABASE = os_environ_get('PGDATABASE', 'catalog')
