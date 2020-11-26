@@ -8,13 +8,15 @@ from modules.logging import logging
 from modules.model import DatabaseConnection
 
 
-def fix_assets(assets_string):
-    """Fix column `assets`"""
+def fix_assets(row):
+    """Fix column `assets` and merge `thumbnail` and `assets` columns"""
+
+    thumbnail, assets = row
 
     new_assets = {}
 
     # convert from `str` to `dict` and iterate over it
-    for asset in loads(assets_string):
+    for asset in loads(assets):
         new_assets[asset['band']] = {
             'href': asset['href'],
             'type': 'image/tiff; application=geotiff',
@@ -24,7 +26,11 @@ def fix_assets(assets_string):
             'type': 'application/xml'
         }
 
-    # logging.debug(f'new_assets: \n{new_assets}\n')
+    # add `thumbnail` to dict of assets
+    new_assets['thumbnail'] = {
+        'href': thumbnail,
+        'type': 'image/png'
+    }
 
     # convert from `dict` to `str`
     return dumps(new_assets)
@@ -51,20 +57,20 @@ class MigrateDBs():
         # save the dataframes in CSV files
         self.__save_dfs()
 
-    def __get_dfs_from_csv_files(self):
+    def __get_dfs_from_csv_files(self, collection_path='data/collection.csv', item_path='data/item.csv'):
         # get the dfs from CSV files
-        self.df_collection = read_csv('data/collection.csv')
-        self.df_item = read_csv('data/item.csv')
+        self.df_collection = read_csv(collection_path)
+        self.df_item = read_csv(item_path)
 
     ##################################################
     # save the dataframes in CSV files
     ##################################################
 
-    def __save_dfs(self):
-        self.df_collection.to_csv('data/collection.csv', index=False)
-        self.df_item.to_csv('data/item.csv', index=False)
+    def __save_dfs(self, collection_path='data/collection.csv', item_path='data/item.csv'):
+        self.df_collection.to_csv(collection_path, index=False)
+        self.df_item.to_csv(item_path, index=False)
 
-        logging.info('Dataframes have been saved sucessfully.\n')
+        logging.info(f'`{collection_path}` and `{item_path}` files have been saved sucessfully.\n')
 
     ##################################################
     # df_collection
@@ -141,11 +147,14 @@ class MigrateDBs():
         self.df_item['tr_longitude'] = self.df_item['tr_longitude'].astype(float)
         self.df_item['tr_latitude'] = self.df_item['tr_latitude'].astype(float)
 
-        # fix `aseets` column
-        self.df_item['assets'] = self.df_item['assets'].apply(fix_assets)
+        # fix `aseets` column, merge `thumbnail` in `assets`
+        self.df_item['assets'] = self.df_item[['thumbnail', 'assets']].apply(fix_assets, axis=1)
+
+        # delete unnecessary column
+        del self.df_item['thumbnail']
 
         # logging.info(f'df_item: \n{self.df_item.head()} \n\n')
-        logging.info(f'df_item: \n{self.df_item[["name", "assets"]].head(10)}\n')
+        logging.info(f'df_item: \n{self.df_item[["name", "collection", "assets"]].head()}\n')
 
     ##################################################
     # main
@@ -154,6 +163,16 @@ class MigrateDBs():
     def main(self):
         self.__configure_df_collection()
         self.__configure_df_item()
+
+        # save a new version of the dataframes after modifications
+        self.__save_dfs(
+            collection_path='data/collection_modified.csv',
+            item_path='data/item_modified.csv'
+        )
+
+        # logging.info('**************************************************')
+        # logging.info('*                      main                      *')
+        # logging.info('**************************************************')
 
 
 if __name__ == "__main__":
