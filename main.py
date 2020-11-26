@@ -6,7 +6,7 @@ from pandas import read_csv, to_datetime
 
 from modules.environment import DATA_PATH
 from modules.logging import logging
-from modules.model import DatabaseConnection
+from modules.model import MySQLConnection
 
 
 def fix_assets(row):
@@ -48,7 +48,7 @@ def generate_collection_id_column(collection_name, df_collection):
 class MigrateDBs():
 
     def __init__(self):
-        # self.__get_dfs_from_db()
+        self.__get_dfs_from_db()
         self.__get_dfs_from_csv_files()
 
     ##################################################
@@ -57,11 +57,11 @@ class MigrateDBs():
 
     def __get_dfs_from_db(self):
         # database connection
-        self.db = DatabaseConnection()
+        self.db_mysql = MySQLConnection()
 
         # get the dfs from database
-        self.df_collection = self.db.select_from_collection()
-        self.df_item = self.db.select_from_item()
+        self.df_collection = self.db_mysql.select_from_collection()
+        self.df_item = self.db_mysql.select_from_item()
 
         # save the dataframes in CSV files
         self.__save_dfs()
@@ -80,7 +80,7 @@ class MigrateDBs():
         self.df_item.to_csv(DATA_PATH + item_file_name, index=False)
 
         logging.info(f'`{collection_file_name}` and `{item_file_name}`'
-                    ' files have been saved sucessfully.\n')
+                    ' files have been saved sucessfully!\n')
 
     ##################################################
     # df_collection and df_item

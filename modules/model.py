@@ -10,7 +10,7 @@ from modules.environment import MYSQL_USER, MYSQL_PASSWORD, MYSQL_HOST, \
 from modules.logging import logging
 
 
-class DatabaseConnection():
+class MySQLConnection():
 
     def __init__(self):
         self.engine = None
@@ -25,9 +25,9 @@ class DatabaseConnection():
         except SQLAlchemyError as error:
             error_message = 'An error occurred during database connection'
 
-            logging.error('DatabaseConnection.connect() - error.code: %s', error.code)
-            logging.error('DatabaseConnection.connect() - error.args: %s', error.args)
-            logging.error('DatabaseConnection.connect() - %s: %s\n', error_message, error)
+            logging.error('MySQLConnection.connect() - error.code: %s', error.code)
+            logging.error('MySQLConnection.connect() - error.args: %s', error.args)
+            logging.error('MySQLConnection.connect() - %s: %s\n', error_message, error)
 
             # error_message += ': ' + str(error.args)
 
@@ -53,18 +53,14 @@ class DatabaseConnection():
             raise Exception('Connection was not opened to the database.')
 
     def execute(self, query):
-        logging.info('DatabaseConnection.execute()')
+        logging.info('MySQLConnection.execute()')
 
         try:
-            logging.info('DatabaseConnection.execute() - query: %s\n', query)
+            logging.info('MySQLConnection.execute() - query: %s\n', query)
 
             self.try_to_connect()
 
             df = read_sql(query, con=self.engine)
-
-            # logging.info('DatabaseConnection.execute() - df.head(): \n%s\n', df.head())
-            # logging.info('DatabaseConnection.execute() - df.shape: %s\n', df.shape)
-            # logging.info('DatabaseConnection.execute() - df.dtypes: \n%s\n', df.dtypes)
 
             return df
 
@@ -72,9 +68,9 @@ class DatabaseConnection():
             # self.rollback()
             error_message = 'An error occurred during query execution'
 
-            logging.error('DatabaseConnection.execute() - error.code: %s', error.code)
-            logging.error('DatabaseConnection.execute() - error.args: %s', error.args)
-            logging.error('DatabaseConnection.execute() - %s: %s\n', error_message, error)
+            logging.error('MySQLConnection.execute() - error.code: %s', error.code)
+            logging.error('MySQLConnection.execute() - error.args: %s', error.args)
+            logging.error('MySQLConnection.execute() - %s: %s\n', error_message, error)
 
             error_message += ': ' + str(error.args)
 
