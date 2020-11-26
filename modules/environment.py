@@ -8,6 +8,8 @@ from os import environ
 os_environ_get = environ.get
 
 
+DATA_PATH = os_environ_get('DATA_PATH', 'assets/data/')
+
 # MYSQL connection
 MYSQL_USER = os_environ_get('MYSQL_USER', 'root')
 MYSQL_PASSWORD = os_environ_get('MYSQL_PASSWORD', 'password')

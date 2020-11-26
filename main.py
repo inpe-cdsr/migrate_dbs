@@ -4,6 +4,7 @@
 from json import dumps, loads
 from pandas import read_csv, to_datetime
 
+from modules.environment import DATA_PATH
 from modules.logging import logging
 from modules.model import DatabaseConnection
 
@@ -57,20 +58,21 @@ class MigrateDBs():
         # save the dataframes in CSV files
         self.__save_dfs()
 
-    def __get_dfs_from_csv_files(self, collection_path='data/collection.csv', item_path='data/item.csv'):
+    def __get_dfs_from_csv_files(self, collection_file_name='collection.csv', item_file_name='item.csv'):
         # get the dfs from CSV files
-        self.df_collection = read_csv(collection_path)
-        self.df_item = read_csv(item_path)
+        self.df_collection = read_csv(DATA_PATH + collection_file_name)
+        self.df_item = read_csv(DATA_PATH + item_file_name)
 
     ##################################################
     # save the dataframes in CSV files
     ##################################################
 
-    def __save_dfs(self, collection_path='data/collection.csv', item_path='data/item.csv'):
-        self.df_collection.to_csv(collection_path, index=False)
-        self.df_item.to_csv(item_path, index=False)
+    def __save_dfs(self, collection_file_name='collection.csv', item_file_name='item.csv'):
+        self.df_collection.to_csv(DATA_PATH + collection_file_name, index=False)
+        self.df_item.to_csv(DATA_PATH + item_file_name, index=False)
 
-        logging.info(f'`{collection_path}` and `{item_path}` files have been saved sucessfully.\n')
+        logging.info(f'`{collection_file_name}` and `{item_file_name}`'
+                    ' files have been saved sucessfully.\n')
 
     ##################################################
     # df_collection
@@ -166,8 +168,8 @@ class MigrateDBs():
 
         # save a new version of the dataframes after modifications
         self.__save_dfs(
-            collection_path='data/collection_modified.csv',
-            item_path='data/item_modified.csv'
+            collection_file_name='collection_modified.csv',
+            item_file_name='item_modified.csv'
         )
 
         # logging.info('**************************************************')
