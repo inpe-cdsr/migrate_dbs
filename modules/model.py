@@ -53,7 +53,7 @@ class DatabaseConnection():
             raise Exception('Connection was not opened to the database.')
 
     def execute(self, query):
-        logging.info('DatabaseConnection.execute()\n')
+        logging.info('DatabaseConnection.execute()')
 
         try:
             logging.info('DatabaseConnection.execute() - query: %s\n', query)
@@ -84,8 +84,8 @@ class DatabaseConnection():
         finally:
             self.close()
 
-    def select_from_stac_collection(self):
+    def select_from_collection(self):
         return self.execute('SELECT * FROM stac_collection;')
 
-    def select_from_stac_item(self):
+    def select_from_item(self):
         return self.execute('SELECT * FROM stac_item;')

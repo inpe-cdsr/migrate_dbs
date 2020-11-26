@@ -2,7 +2,7 @@
 
 import logging
 
-from logging import INFO
+from logging import DEBUG
 
 
-logging.basicConfig(format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s', level=INFO)
+logging.basicConfig(format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s', level=DEBUG)

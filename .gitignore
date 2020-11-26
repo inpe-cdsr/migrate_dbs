@@ -1,4 +1,5 @@
 data
+environment.env
 
 .vscode
 __pycache__
