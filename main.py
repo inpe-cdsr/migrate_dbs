@@ -47,9 +47,9 @@ def generate_collection_id_column(collection_name, df_collection):
 
 class MigrateDBs():
 
-    # def __init__(self):
-        # PostgreSQL connection
-        # self.db_postgres = PostgreSQLConnection()
+    def __init__(self):
+        # create PostgreSQL connection
+        self.db_postgres = PostgreSQLConnection()
 
     ##################################################
     # get the dataframes
@@ -84,11 +84,11 @@ class MigrateDBs():
         logging.info(f'`{collection_file_name}` and `{item_file_name}`'
                     ' files have been saved sucessfully!\n')
 
-    def __postgresql__delete_from_tables(self):
+    def __delete_from_tables(self):
         """Clear the tables in the PostgreSQL database"""
 
-        self.db_postgres.delete_from_table('collections')
-        self.db_postgres.delete_from_table('items')
+        self.db_postgres.delete_from_table('bdc.collections')
+        self.db_postgres.delete_from_table('bdc.items')
 
         logging.info(f'`collections` and `items` tables have been cleared sucessfully!\n')
 
@@ -124,6 +124,11 @@ class MigrateDBs():
 
         logging.info(f'df_collection: \n{self.df_collection} \n')
         # logging.info(f'df_collection.dtypes: \n{self.df_collection.dtypes} \n')
+
+    def __insert_df_collection_into_database(self):
+        for collection in self.df_collection.itertuples():
+            self.db_postgres.insert_into_collection(**collection._asdict())
+            logging.info(f'`{collection.name}` collection has been inserted in the database sucessfully!\n')
 
     def __fix_df_item_columns_order(self):
         # get columns
@@ -221,8 +226,8 @@ class MigrateDBs():
         logging.info(f'df_collection: \n{self.df_collection} \n')
         logging.info(f'df_item: \n{self.df_item[["name", "collection_id", "collection", "assets"]].head()}\n')
 
-        # clear tables
-        # self.__postgresql__delete_from_tables()
+        self.__delete_from_tables()
+        self.__insert_df_collection_into_database()
 
 
 if __name__ == "__main__":

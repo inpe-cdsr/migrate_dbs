@@ -101,13 +101,11 @@ class PostgreSQLConnection():
 
             raise SQLAlchemyError(error)
 
-    def __del__(self):
-        self.engine.dispose()
-
     def execute(self, query, params=None, is_transaction=False):
         logging.info('PostgreSQLConnection.execute()')
-        logging.error(f'PostgreSQLConnection.execute() - is_transaction: {is_transaction}')
-        logging.error(f'PostgreSQLConnection.execute() - query: {query}\n')
+        logging.info(f'PostgreSQLConnection.execute() - is_transaction: {is_transaction}')
+        logging.info(f'PostgreSQLConnection.execute() - query: {query}')
+        logging.info(f'PostgreSQLConnection.execute() - params: {params}')
 
         try:
             if is_transaction:
@@ -134,12 +132,15 @@ class PostgreSQLConnection():
     ####################################################################################################
 
     def insert_into_collection(self, id=None, name=None, description=None, start_date=None, end_date=None,
-                          min_y=None, min_x=None, max_y=None, max_x=None, **kwards):
+                               min_x=None, min_y=None, max_x=None, max_y=None, **kwards):
 
-        query = ('INSERT INTO collections (id, name, title, description, start_date, end_date, extent)'
-                 'VALUES (%(id)s, %(name)s, %(title)s, %(description)s, %(start_date)s, %(end_date)s, %(extent)s);')
-
-        extent_spatial = f"ST_Polygon('LINESTRING({min_y} {min_x}, {max_y} {max_x})'::geometry, 4326)"
+        query = (
+            'INSERT INTO bdc.collections '
+            '(id, name, title, description, start_date, end_date, extent) '
+            'VALUES '
+            '(%(id)s, %(name)s, %(title)s, %(description)s, %(start_date)s, %(end_date)s, '
+            'ST_MakeEnvelope(%(min_x)s, %(min_y)s, %(max_x)s, %(max_y)s, 4326));'
+        )
 
         self.execute(
             query,
@@ -150,7 +151,10 @@ class PostgreSQLConnection():
                 'description': description,
                 'start_date': start_date,
                 'end_date': end_date,
-                'extent': extent_spatial
+                'min_x': min_x,
+                'min_y': min_y,
+                'max_x': max_x,
+                'max_y': max_y
             },
             is_transaction=True
         )
