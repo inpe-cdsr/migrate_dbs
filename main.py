@@ -7,6 +7,7 @@ from pandas import read_csv, to_datetime
 from modules.environment import DATA_PATH
 from modules.logging import logging
 from modules.model import MySQLConnection, PostgreSQLConnection
+from modules.utils import delete_and_recreate_folder
 
 
 def fix_assets(row):
@@ -50,6 +51,10 @@ class MigrateDBs():
     def __init__(self):
         # create PostgreSQL connection
         self.db_postgres = PostgreSQLConnection()
+
+        # delete and recreate `assets` folder
+        delete_and_recreate_folder(DATA_PATH)
+        logging.info(f'`{DATA_PATH}` folder has been recreated sucessfully!\n')
 
     ##################################################
     # get the dataframes
@@ -250,6 +255,10 @@ class MigrateDBs():
 
         self.__configure_df_collection__fix_columns_types()
         self.__configure_df_item__fix_columns_types()
+
+        logging.info('**************************************************')
+        logging.info('*                      main                      *')
+        logging.info('**************************************************')
 
         logging.info(f'df_collection: \n{self.df_collection} \n')
         logging.info(f'df_item: \n{self.df_item[["name", "collection_id", "collection", "sync_loss", "assets"]].head()}\n')
