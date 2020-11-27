@@ -52,10 +52,6 @@ class MigrateDBs():
         # create PostgreSQL connection
         self.db_postgres = PostgreSQLConnection()
 
-        # delete and recreate `assets` folder
-        delete_and_recreate_folder(DATA_PATH)
-        logging.info(f'`{DATA_PATH}` folder has been recreated sucessfully!\n')
-
     ##################################################
     # get the dataframes
     ##################################################
@@ -67,9 +63,6 @@ class MigrateDBs():
         # get the dfs from database
         self.df_collection = db_mysql.select_from_collection()
         self.df_item = db_mysql.select_from_item()
-
-        # save the dataframes in CSV files
-        self.__save_dfs()
 
     def __get_dfs_from_csv_files(self, collection_file_name='collection.csv', item_file_name='item.csv'):
         # get the dfs from CSV files
@@ -225,10 +218,21 @@ class MigrateDBs():
         logging.info(f'All items have been inserted in the database sucessfully!\n')
 
     ##################################################
-    # df_collection and df_item
+    # main
     ##################################################
 
-    def __configure_dataframes(self):
+    def __main__get_dfs_configure_dfs_and_save_dfs(self):
+        # delete and recreate `assets` folder
+        delete_and_recreate_folder(DATA_PATH)
+        logging.info(f'`{DATA_PATH}` folder has been recreated sucessfully!\n')
+
+        # get dataframes from database and save them in CSV files
+        self.__get_dfs_from_mysqldb()
+        self.__save_dfs()
+
+        # get the saved dataframes
+        self.__get_dfs_from_csv_files()
+
         # configure dataframes
         self.__configure_df_collection()
         self.__configure_df_item()
@@ -239,14 +243,8 @@ class MigrateDBs():
             item_file_name='item_configured.csv'
         )
 
-    ##################################################
-    # main
-    ##################################################
-
     def main(self):
-        self.__get_dfs_from_mysqldb()
-        self.__get_dfs_from_csv_files()
-        self.__configure_dataframes()
+        self.__main__get_dfs_configure_dfs_and_save_dfs()
 
         self.__get_dfs_from_csv_files(
             collection_file_name='collection_configured.csv',
