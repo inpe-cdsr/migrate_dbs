@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from json import dumps
+
 from pandas import read_sql, to_datetime
 import pymysql
 from sqlalchemy import create_engine
@@ -131,7 +133,7 @@ class PostgreSQLConnection():
     # COLLECTION
     ####################################################################################################
 
-    def insert_into_collection(self, id=None, name=None, description=None, start_date=None, end_date=None,
+    def insert_into_collections(self, id=None, name=None, description=None, start_date=None, end_date=None,
                                min_x=None, min_y=None, max_x=None, max_y=None, **kwards):
 
         query = (
@@ -162,6 +164,53 @@ class PostgreSQLConnection():
     ####################################################################################################
     # ITEM
     ####################################################################################################
+
+    def insert_into_items(self, id=None, name=None, collection_id=None, datetime=None, cloud_cover=None,
+                          path=None, row=None, satellite=None, sensor=None, sync_loss=None,
+                          assets=None, deleted=None, srid=4326,
+                          bl_longitude=None, bl_latitude=None, tr_longitude=None, tr_latitude=None, **kwards):
+
+        metadata = {
+            # 'datetime': datetime,
+            # 'date': date,
+            'path': path,
+            'row': row,
+            'satellite': satellite,
+            'sensor': sensor,
+            # 'cloud_cover': cloud_cover,
+            'sync_loss': sync_loss,
+            'deleted': deleted
+        }
+
+        query = (
+            'INSERT INTO bdc.items '
+            '(id, name, collection_id, start_date, end_date, cloud_cover, '
+            'assets, metadata, geom, min_convex_hull, srid) '
+            'VALUES '
+            '(%(id)s, %(name)s, %(collection_id)s, %(datetime)s, %(datetime)s, %(cloud_cover)s, '
+            '%(assets)s,  %(metadata)s, '
+            'ST_MakeEnvelope(%(min_x)s, %(min_y)s, %(max_x)s, %(max_y)s, %(srid)s), '
+            'ST_MakeEnvelope(%(min_x)s, %(min_y)s, %(max_x)s, %(max_y)s, %(srid)s), %(srid)s);'
+        )
+
+        self.execute(
+            query,
+            params={
+                'id': id,
+                'name': name,
+                'collection_id': collection_id,
+                'datetime': datetime,
+                'cloud_cover': cloud_cover,
+                'assets': assets,
+                'metadata': dumps(metadata),
+                'srid': srid,
+                'min_x': bl_longitude,
+                'min_y': bl_latitude,
+                'max_x': tr_longitude,
+                'max_y': tr_latitude
+            },
+            is_transaction=True
+        )
 
     ####################################################################################################
     # GENERIC
