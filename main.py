@@ -128,7 +128,8 @@ class MigrateDBs():
     def __insert_df_collection_into_database(self):
         for collection in self.df_collection.itertuples():
             self.db_postgres.insert_into_collection(**collection._asdict())
-            logging.info(f'`{collection.name}` collection has been inserted in the database sucessfully!\n')
+            logging.info(f'`{collection.name}` collection has been inserted in the database sucessfully!')
+        logging.info(f'All collections have been inserted in the database sucessfully!\n')
 
     def __fix_df_item_columns_order(self):
         # get columns

@@ -4,9 +4,15 @@
 
 
 from os import environ
+from logging import DEBUG, INFO
+
+from modules.utils import str2bool
+
 
 os_environ_get = environ.get
 
+
+DEBUG_MODE = str2bool(os_environ_get('DEBUG_MODE', 'True'))
 
 DATA_PATH = os_environ_get('DATA_PATH', 'assets/data/')
 
@@ -23,3 +29,10 @@ MYSQL_DATABASE = os_environ_get('MYSQL_DATABASE', 'catalog_rubi')
 # PGHOST = os_environ_get('PGHOST', 'localhost')
 # PGPORT = int(os_environ_get('PGPORT', 9004))
 # PGDATABASE = os_environ_get('PGDATABASE', 'catalog')
+
+# default logging level in production server
+LOGGING_LEVEL = INFO
+
+# if the application is in development mode, then change the logging level and debug mode
+if DEBUG_MODE:
+    LOGGING_LEVEL = DEBUG

@@ -102,10 +102,10 @@ class PostgreSQLConnection():
             raise SQLAlchemyError(error)
 
     def execute(self, query, params=None, is_transaction=False):
-        logging.info('PostgreSQLConnection.execute()')
-        logging.info(f'PostgreSQLConnection.execute() - is_transaction: {is_transaction}')
-        logging.info(f'PostgreSQLConnection.execute() - query: {query}')
-        logging.info(f'PostgreSQLConnection.execute() - params: {params}')
+        logging.debug('PostgreSQLConnection.execute()')
+        logging.debug(f'PostgreSQLConnection.execute() - is_transaction: {is_transaction}')
+        logging.debug(f'PostgreSQLConnection.execute() - query: {query}')
+        logging.debug(f'PostgreSQLConnection.execute() - params: {params}')
 
         try:
             if is_transaction:
