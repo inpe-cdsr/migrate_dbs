@@ -238,9 +238,7 @@ class MigrateDBs():
         )
 
         # generate INSERT clause for each row
-        self.df_item['insert'] = self.df_item.apply(
-            generate_insert_clause_column, axis=1
-        )
+        self.df_item['insert'] = self.df_item.apply(generate_insert_clause_column, axis=1)
 
         # delete unnecessary columns
         del self.df_item['thumbnail']
@@ -261,23 +259,25 @@ class MigrateDBs():
             # logging.info(f'`{item.name}` item has been inserted in the database sucessfully!')
         logging.info(f'All items have been inserted in the database sucessfully!\n')
 
-        # # fill Download table by chunks
-        # step = 20000
-        # for start_slice in range(0, size_df_without_empty_values, step):
+        # size_df_item = len(self.df_item)
+
+        # fill `items` table by chunks
+        # step = 10000
+        # for start_slice in range(0, size_df_item, step):
         #     end_slice = start_slice + step
-        #     if end_slice > size_df_without_empty_values:
-        #         end_slice = size_df_without_empty_values
+        #     if end_slice > size_df_item:
+        #         end_slice = size_df_item
 
         #     logging.info(f'start_slice: {start_slice} - end_slice: {end_slice}')
 
-        #     # concatenate the UPDATE clauses to execute many statetimes in one time
-        #     query_updates = ' '.join(df_df_without_empty_values[start_slice:end_slice]['update'].tolist())
+        #     # concatenate the INSERT clauses to execute many statetimes in one time
+        #     insert_clauses = ' '.join(self.df_item[start_slice:end_slice]['insert'].tolist())
 
-        #     # logging.info(f'query_updates: {query_updates} \n')
-        #     # logging.info(f'type query_updates: {type(query_updates)} \n')
+        #     logging.info(f'insert_clauses: {insert_clauses} \n')
+        #     # logging.info(f'type query_updates: {type(insert_clauses)} \n')
 
-        #     logging.info(f'Executing `query_updates`...\n')
-        #     self.db.execute(query_updates, transaction=True)
+        #     logging.info(f'Inserting items in the database...\n')
+        #     self.db.execute(insert_clauses, transaction=True)
 
     ##################################################
     # main
@@ -327,9 +327,9 @@ class MigrateDBs():
         logging.info(f'df_collection: \n{self.df_collection} \n')
         logging.info(f'df_item: \n{self.df_item[["name", "collection_id", "collection", "insert"]].head()}\n')
 
-        # self.__delete_from_tables()
-        # self.__insert_df_collection_into_database()
-        # self.__insert_df_item_into_database()
+        self.__delete_from_tables()
+        self.__insert_df_collection_into_database()
+        self.__insert_df_item_into_database()
 
 
 if __name__ == "__main__":
