@@ -1,4 +1,4 @@
-sensor,band,levels
+name,bands,levels
 WPM,"[{""name"": ""B1"", ""common_name"": ""blue"", ""min_value"": 0.45, ""max_value"": 0.52, ""resolution"": 8},
 {""name"": ""B2"", ""common_name"": ""green"", ""min_value"": 0.52, ""max_value"": 0.59, ""resolution"": 8},
 {""name"": ""B3"", ""common_name"": ""red"", ""min_value"": 0.63, ""max_value"": 0.69, ""resolution"": 8},

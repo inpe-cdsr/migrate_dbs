@@ -130,14 +130,17 @@ class PostgreSQLConnection():
             raise SQLAlchemyError(error)
 
     ####################################################################################################
-    # RESOLUTION
+    # BAND
     ####################################################################################################
 
-    def insert_into_resolution(self, id=None, name=None, symbol=None, **kwards):
+    def insert_into_bands(self, id=None, name=None, common_name=None, description=None, min_value=None,
+                          max_value=None, resolution=None, metadata=None, resolution_unit_id=None, **kwards):
 
         query = (
-            'INSERT INTO bdc.resolution_unit (id, name, symbol) '
-            'VALUES (%(id)s, %(name)s, %(symbol)s);'
+            'INSERT INTO bdc.bands (id, name, common_name, description, min_value, '
+            'max_value, resolution_x, resolution_y, metadata, resolution_unit_id) '
+            'VALUES (%(id)s, %(name)s, %(common_name)s,  %(description)s, %(min_value)s, '
+            '%(max_value)s, %(resolution)s, %(resolution)s, %(metadata)s, %(resolution_unit_id)s);'
         )
 
         self.execute(
@@ -145,7 +148,13 @@ class PostgreSQLConnection():
             params={
                 'id': id,
                 'name': name,
-                'symbol': symbol
+                'common_name': common_name,
+                'description': description,
+                'min_value': min_value,
+                'max_value': max_value,
+                'resolution': resolution,
+                'metadata': metadata,
+                'resolution_unit_id': resolution_unit_id
             },
             is_transaction=True
         )
@@ -229,6 +238,27 @@ class PostgreSQLConnection():
                 'min_y': bl_latitude,
                 'max_x': tr_longitude,
                 'max_y': tr_latitude
+            },
+            is_transaction=True
+        )
+
+    ####################################################################################################
+    # RESOLUTION
+    ####################################################################################################
+
+    def insert_into_resolution(self, id=None, name=None, symbol=None, **kwards):
+
+        query = (
+            'INSERT INTO bdc.resolution_unit (id, name, symbol) '
+            'VALUES (%(id)s, %(name)s, %(symbol)s);'
+        )
+
+        self.execute(
+            query,
+            params={
+                'id': id,
+                'name': name,
+                'symbol': symbol
             },
             is_transaction=True
         )

@@ -98,13 +98,13 @@ class MigrateDBs():
     def __get_dfs_from_csv_files(self, collection_file_name='collection.csv',
                                                            item_file_name='item.csv',
                                                            resolution_unit_file_name='resolution_unit.csv',
-                                                           band_file_name='band.csv'):
+                                                           sensor_file_name='sensor.csv'):
         # get the dfs from CSV files
         self.df_collection = read_csv(DATA_PATH + collection_file_name)
         self.df_item = read_csv(DATA_PATH + item_file_name)
 
         self.df_resolution_unit = read_csv(DATA_FIXED_PATH + resolution_unit_file_name)
-        self.df_band = read_csv(DATA_FIXED_PATH + band_file_name)
+        self.df_sensor = read_csv(DATA_FIXED_PATH + sensor_file_name)
 
     ##################################################
     # other
@@ -140,12 +140,12 @@ class MigrateDBs():
         logging.info(f'All tables have been cleared in the database sucessfully!\n')
 
     ##################################################
-    # df_resolution_unit and df_band
+    # df_resolution_unit and df_sensor
     ##################################################
 
-    def __configure_dfs_resolution_and_band(self):
+    def __configure_dfs_resolution_and_sensor(self):
         logging.info('**************************************************')
-        logging.info('*       __configure_dfs_resolution_and_band      *')
+        logging.info('*       __configure_dfs_resolution_and_sensor      *')
         logging.info('**************************************************')
 
         # create `id` column based on the row index value
@@ -155,7 +155,7 @@ class MigrateDBs():
         self.df_resolution_unit = self.df_resolution_unit[['id'] + [col for col in self.df_resolution_unit.columns if col != 'id']]
 
         logging.info(f'df_resolution_unit: \n{self.df_resolution_unit} \n')
-        logging.info(f'df_band: \n{self.df_band} \n')
+        logging.info(f'df_sensor: \n{self.df_sensor} \n')
 
     def __insert_df_resolution_into_database(self):
         logging.info('**************************************************')
@@ -167,6 +167,31 @@ class MigrateDBs():
             self.db_postgres.insert_into_resolution(**resolution._asdict())
 
         logging.info(f'All resolutions have been inserted in the database sucessfully!\n')
+
+    def __insert_df_sensor_into_database(self):
+        logging.info('**************************************************')
+        logging.info('*        __insert_df_sensor_into_database        *')
+        logging.info('**************************************************')
+
+        # create an increment id
+        id = 1
+
+        # collection_id = 0
+        # get the 'micrometre' resolution id
+        resolution_unit_id = int(self.df_resolution_unit[self.df_resolution_unit['name'] == 'micrometre'].at[0, 'id'])
+        logging.info(f'resolution_unit_id: {resolution_unit_id}')
+
+        for sensor in self.df_sensor.itertuples():
+            for band in loads(sensor.bands):
+                band["description"] = f'{sensor.name} - {band["name"]} - {band["common_name"]}'
+                band["metadata"] = dumps({"sensor": sensor.name})
+
+                logging.info(f'Inserting `{band["description"]}` element in the database...')
+                self.db_postgres.insert_into_bands(id=id, **band, resolution_unit_id=resolution_unit_id)
+
+                id += 1
+
+        logging.info(f'All elements have been inserted in the database sucessfully!\n')
 
     ##################################################
     # df_collection
@@ -353,7 +378,7 @@ class MigrateDBs():
             item_file_name='item_configured.csv'
         )
 
-        self.__configure_dfs_resolution_and_band()
+        self.__configure_dfs_resolution_and_sensor()
         self.__configure_df_collection__fix_columns_types()
         self.__configure_df_item__fix_columns_types()
 
@@ -366,8 +391,9 @@ class MigrateDBs():
 
         self.__clear_tables_in_the_database()
 
+        self.__insert_df_collection_into_database()
         self.__insert_df_resolution_into_database()
-        # self.__insert_df_collection_into_database()
+        self.__insert_df_sensor_into_database()
         # self.__insert_df_item_into_database()
 
 
