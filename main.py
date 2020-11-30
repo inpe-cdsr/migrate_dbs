@@ -169,7 +169,7 @@ class MigrateDBs():
 
         for collection in self.df_collection.itertuples():
             self.db_postgres.insert_into_collections(**collection._asdict())
-            logging.info(f'`{collection.name}` collection has been inserted in the database sucessfully!')
+            # logging.info(f'`{collection.name}` collection has been inserted in the database sucessfully!')
         logging.info(f'All collections have been inserted in the database sucessfully!\n')
 
     ##################################################
@@ -229,6 +229,8 @@ class MigrateDBs():
 
         self.__configure_df_item__fix_columns_types()
 
+        self.df_item['thumbnail'] = self.df_item['thumbnail'].fillna('')
+
         # fix `aseets` column, merge `thumbnail` in `assets`
         self.df_item['assets'] = self.df_item[['thumbnail', 'assets']].apply(fix_assets, axis=1)
 
@@ -254,30 +256,24 @@ class MigrateDBs():
         logging.info('*         __insert_df_item_into_database         *')
         logging.info('**************************************************')
 
-        for item in self.df_item[0:10].itertuples():
-            self.db_postgres.insert_into_items(**item._asdict())
-            # logging.info(f'`{item.name}` item has been inserted in the database sucessfully!')
-        logging.info(f'All items have been inserted in the database sucessfully!\n')
+        size_df_item = len(self.df_item)
 
-        # size_df_item = len(self.df_item)
+        logging.info(f'size_df_item: {size_df_item}')
 
         # fill `items` table by chunks
-        # step = 10000
-        # for start_slice in range(0, size_df_item, step):
-        #     end_slice = start_slice + step
-        #     if end_slice > size_df_item:
-        #         end_slice = size_df_item
+        step = 10000
+        for start_slice in range(0, size_df_item, step):
+            end_slice = start_slice + step
+            if end_slice > size_df_item:
+                end_slice = size_df_item
 
-        #     logging.info(f'start_slice: {start_slice} - end_slice: {end_slice}')
+            # concatenate the INSERT clauses to execute many statements in one time
+            insert_clauses = ' '.join(self.df_item[start_slice:end_slice]['insert'].tolist())
 
-        #     # concatenate the INSERT clauses to execute many statetimes in one time
-        #     insert_clauses = ' '.join(self.df_item[start_slice:end_slice]['insert'].tolist())
+            logging.info(f'Inserting items[{start_slice}, {end_slice}] in the database...')
+            self.db_postgres.execute(insert_clauses, is_transaction=True)
 
-        #     logging.info(f'insert_clauses: {insert_clauses} \n')
-        #     # logging.info(f'type query_updates: {type(insert_clauses)} \n')
-
-        #     logging.info(f'Inserting items in the database...\n')
-        #     self.db.execute(insert_clauses, transaction=True)
+        logging.info(f'All items have been inserted in the database sucessfully!\n')
 
     ##################################################
     # main
