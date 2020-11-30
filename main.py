@@ -162,9 +162,10 @@ class MigrateDBs():
         logging.info('*      __insert_df_resolution_into_database      *')
         logging.info('**************************************************')
 
-        for resolution in self.df_resolution.itertuples():
+        for resolution in self.df_resolution_unit.itertuples():
             logging.info(f'Inserting `{resolution.name}` resolution in the database...')
-            # self.db_postgres.insert_into_collections(**collection._asdict())
+            self.db_postgres.insert_into_resolution(**resolution._asdict())
+
         logging.info(f'All resolutions have been inserted in the database sucessfully!\n')
 
     ##################################################
@@ -365,9 +366,9 @@ class MigrateDBs():
 
         self.__clear_tables_in_the_database()
 
-        # self.__insert_df_resolution_into_database()
-        self.__insert_df_collection_into_database()
-        self.__insert_df_item_into_database()
+        self.__insert_df_resolution_into_database()
+        # self.__insert_df_collection_into_database()
+        # self.__insert_df_item_into_database()
 
 
 if __name__ == "__main__":

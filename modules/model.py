@@ -133,15 +133,11 @@ class PostgreSQLConnection():
     # RESOLUTION
     ####################################################################################################
 
-    def insert_into_resolution(self, id=None, name=None, description=None, start_date=None, end_date=None,
-                               min_x=None, min_y=None, max_x=None, max_y=None, **kwards):
+    def insert_into_resolution(self, id=None, name=None, symbol=None, **kwards):
 
         query = (
-            'INSERT INTO bdc.resolution_unit '
-            '(id, name, title, description, start_date, end_date, extent) '
-            'VALUES '
-            '(%(id)s, %(name)s, %(title)s, %(description)s, %(start_date)s, %(end_date)s, '
-            'ST_MakeEnvelope(%(min_x)s, %(min_y)s, %(max_x)s, %(max_y)s, 4326));'
+            'INSERT INTO bdc.resolution_unit (id, name, symbol) '
+            'VALUES (%(id)s, %(name)s, %(symbol)s);'
         )
 
         self.execute(
@@ -149,14 +145,7 @@ class PostgreSQLConnection():
             params={
                 'id': id,
                 'name': name,
-                'title': name,
-                'description': description,
-                'start_date': start_date,
-                'end_date': end_date,
-                'min_x': min_x,
-                'min_y': min_y,
-                'max_x': max_x,
-                'max_y': max_y
+                'symbol': symbol
             },
             is_transaction=True
         )
