@@ -4,7 +4,7 @@
 from json import dumps, loads
 from pandas import read_csv, to_datetime
 
-from modules.environment import DATA_PATH
+from modules.environment import DATA_PATH, DATA_FIXED_PATH
 from modules.logging import logging
 from modules.model import MySQLConnection, PostgreSQLConnection
 from modules.utils import delete_and_recreate_folder
@@ -95,10 +95,16 @@ class MigrateDBs():
         self.df_collection = db_mysql.select_from_collection()
         self.df_item = db_mysql.select_from_item()
 
-    def __get_dfs_from_csv_files(self, collection_file_name='collection.csv', item_file_name='item.csv'):
+    def __get_dfs_from_csv_files(self, collection_file_name='collection.csv',
+                                                           item_file_name='item.csv',
+                                                           resolution_unit_file_name='resolution_unit.csv',
+                                                           band_file_name='band.csv'):
         # get the dfs from CSV files
         self.df_collection = read_csv(DATA_PATH + collection_file_name)
         self.df_item = read_csv(DATA_PATH + item_file_name)
+
+        self.df_resolution_unit = read_csv(DATA_FIXED_PATH + resolution_unit_file_name)
+        self.df_band = read_csv(DATA_FIXED_PATH + band_file_name)
 
     ##################################################
     # other
@@ -128,6 +134,24 @@ class MigrateDBs():
         self.db_postgres.delete_from_table('bdc.items')
 
         logging.info(f'`collections` and `items` tables have been cleared sucessfully!\n')
+
+    ##################################################
+    # df_resolution_unit and df_band
+    ##################################################
+
+    def __configure_dfs_resolution_and_band(self):
+        logging.info('**************************************************')
+        logging.info('*       __configure_dfs_resolution_and_band      *')
+        logging.info('**************************************************')
+
+        # create `id` column based on the row index value
+        self.df_resolution_unit["id"] = self.df_resolution_unit.index + 1
+
+        # put `id` column as the first column
+        self.df_resolution_unit = self.df_resolution_unit[['id'] + [col for col in self.df_resolution_unit.columns if col != 'id']]
+
+        logging.info(f'df_resolution_unit: \n{self.df_resolution_unit} \n')
+        logging.info(f'df_band: \n{self.df_band} \n')
 
     ##################################################
     # df_collection
@@ -168,8 +192,8 @@ class MigrateDBs():
         logging.info('**************************************************')
 
         for collection in self.df_collection.itertuples():
+            logging.info(f'Inserting `{collection.name}` collection in the database...')
             self.db_postgres.insert_into_collections(**collection._asdict())
-            # logging.info(f'`{collection.name}` collection has been inserted in the database sucessfully!')
         logging.info(f'All collections have been inserted in the database sucessfully!\n')
 
     ##################################################
@@ -279,23 +303,25 @@ class MigrateDBs():
     # main
     ##################################################
 
-    def __main__get_dfs_configure_dfs_and_save_dfs(self):
+    def __main__get_dfs_configure_dfs_and_save_dfs(self, is_to_get_dfs_from_db=True):
         logging.info('**************************************************')
         logging.info('*                 main - settings                *')
         logging.info('**************************************************')
 
-        # delete and recreate `assets` folder
-        delete_and_recreate_folder(DATA_PATH)
-        logging.info(f'`{DATA_PATH}` folder has been recreated sucessfully!\n')
+        if is_to_get_dfs_from_db:
+            # delete and recreate `assets` folder
+            delete_and_recreate_folder(DATA_PATH)
+            logging.info(f'`{DATA_PATH}` folder has been recreated sucessfully!\n')
 
-        # get dataframes from database and save them in CSV files
-        self.__get_dfs_from_mysqldb()
-        self.__save_dfs()
+            # get dataframes from database and save them in CSV files
+            self.__get_dfs_from_mysqldb()
+            self.__save_dfs()
 
         # get the saved dataframes
         self.__get_dfs_from_csv_files()
 
         # configure dataframes
+        self.__configure_dfs_resolution_and_band()
         self.__configure_df_collection()
         self.__configure_df_item()
 
@@ -306,7 +332,7 @@ class MigrateDBs():
         )
 
     def main(self):
-        self.__main__get_dfs_configure_dfs_and_save_dfs()
+        self.__main__get_dfs_configure_dfs_and_save_dfs(is_to_get_dfs_from_db=True)
 
         self.__get_dfs_from_csv_files(
             collection_file_name='collection_configured.csv',

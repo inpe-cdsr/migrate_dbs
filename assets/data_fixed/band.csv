@@ -1,0 +1,14 @@
+sensor,band,levels
+WPM,"[{""name"": ""B1"", ""common_name"": ""blue"", ""min_value"": 0.45, ""max_value"": 0.52, ""resolution"": 8},
+{""name"": ""B2"", ""common_name"": ""green"", ""min_value"": 0.52, ""max_value"": 0.59, ""resolution"": 8},
+{""name"": ""B3"", ""common_name"": ""red"", ""min_value"": 0.63, ""max_value"": 0.69, ""resolution"": 8},
+{""name"": ""B4"", ""common_name"": ""nir"", ""min_value"": 0.77, ""max_value"": 0.89, ""resolution"": 8},
+{""name"": ""P"", ""common_name"": ""pan"", ""min_value"": 0.45, ""max_value"": 0.90, ""resolution"": 2}]","[""L2"", ""L4""]"
+MUX,"[{""name"": ""B05"", ""common_name"": ""blue"", ""min_value"": 0.45, ""max_value"": 0.52, ""resolution"": 16.5},
+{""name"": ""B06"", ""common_name"": ""green"", ""min_value"": 0.52, ""max_value"": 0.59, ""resolution"": 16.5},
+{""name"": ""B07"", ""common_name"": ""red"", ""min_value"": 0.63, ""max_value"": 0.69, ""resolution"": 16.5},
+{""name"": ""B08"", ""common_name"": ""nir"", ""min_value"": 0.77, ""max_value"": 0.89, ""resolution"": 16.5}]","[""L2"", ""L4""]"
+WFI,"[{""name"": ""B13"", ""common_name"": ""blue"", ""min_value"": 0.45, ""max_value"": 0.52, ""resolution"": 55},
+{""name"": ""B14"", ""common_name"": ""green"", ""min_value"": 0.52, ""max_value"": 0.59, ""resolution"": 55},
+{""name"": ""B15"", ""common_name"": ""red"", ""min_value"": 0.63, ""max_value"": 0.69, ""resolution"": 55},
+{""name"": ""B16"", ""common_name"": ""nir"", ""min_value"": 0.77, ""max_value"": 0.89, ""resolution"": 55}]","[""L2"", ""L4""]"

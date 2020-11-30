@@ -15,6 +15,7 @@ os_environ_get = environ.get
 DEBUG_MODE = str2bool(os_environ_get('DEBUG_MODE', 'True'))
 
 DATA_PATH = os_environ_get('DATA_PATH', 'assets/data/')
+DATA_FIXED_PATH = os_environ_get('DATA_FIXED_PATH', 'assets/data_fixed/')
 
 # MYSQL connection
 MYSQL_USER = os_environ_get('MYSQL_USER', 'root')
