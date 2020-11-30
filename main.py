@@ -168,6 +168,16 @@ class MigrateDBs():
 
         logging.info(f'All resolutions have been inserted in the database sucessfully!\n')
 
+    def __get_collection_id_based_on(self, sensor, level):
+        # get `collection` by sensor and level
+        collection = list(filter(
+            lambda name: sensor in name and level in name,
+            self.df_collection['name'].tolist()
+        ))[0]
+
+        # get `collection_id` by position
+        return int(self.df_collection[self.df_collection['name'] == collection].reset_index().at[0, 'id'])
+
     def __insert_df_sensor_into_database(self):
         logging.info('**************************************************')
         logging.info('*        __insert_df_sensor_into_database        *')
@@ -176,20 +186,21 @@ class MigrateDBs():
         # create an increment id
         id = 1
 
-        # collection_id = 0
         # get the 'micrometre' resolution id
         resolution_unit_id = int(self.df_resolution_unit[self.df_resolution_unit['name'] == 'micrometre'].at[0, 'id'])
         logging.info(f'resolution_unit_id: {resolution_unit_id}')
 
         for sensor in self.df_sensor.itertuples():
             for band in loads(sensor.bands):
-                band["description"] = f'{sensor.name} - {band["name"]} - {band["common_name"]}'
-                band["metadata"] = dumps({"sensor": sensor.name})
+                for level in loads(sensor.levels):
+                    band["description"] = f'{sensor.name} - {level} - {band["name"]} - {band["common_name"]}'
+                    band["metadata"] = dumps({'sensor': sensor.name, 'level': level})
+                    band["collection_id"] = self.__get_collection_id_based_on(sensor.name, level)
 
-                logging.info(f'Inserting `{band["description"]}` element in the database...')
-                self.db_postgres.insert_into_bands(id=id, **band, resolution_unit_id=resolution_unit_id)
+                    logging.info(f'Inserting `{band["description"]}` element in the database...')
+                    self.db_postgres.insert_into_bands(id=id, **band, resolution_unit_id=resolution_unit_id)
 
-                id += 1
+                    id += 1
 
         logging.info(f'All elements have been inserted in the database sucessfully!\n')
 

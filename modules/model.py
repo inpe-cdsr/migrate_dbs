@@ -134,13 +134,15 @@ class PostgreSQLConnection():
     ####################################################################################################
 
     def insert_into_bands(self, id=None, name=None, common_name=None, description=None, min_value=None,
-                          max_value=None, resolution=None, metadata=None, resolution_unit_id=None, **kwards):
+                          max_value=None, resolution=None, metadata=None, collection_id=None,
+                          resolution_unit_id=None, **kwards):
 
         query = (
             'INSERT INTO bdc.bands (id, name, common_name, description, min_value, '
-            'max_value, resolution_x, resolution_y, metadata, resolution_unit_id) '
+            'max_value, resolution_x, resolution_y, metadata, collection_id, resolution_unit_id) '
             'VALUES (%(id)s, %(name)s, %(common_name)s,  %(description)s, %(min_value)s, '
-            '%(max_value)s, %(resolution)s, %(resolution)s, %(metadata)s, %(resolution_unit_id)s);'
+            '%(max_value)s, %(resolution)s, %(resolution)s, %(metadata)s, %(collection_id)s, '
+            '%(resolution_unit_id)s);'
         )
 
         self.execute(
@@ -154,6 +156,7 @@ class PostgreSQLConnection():
                 'max_value': max_value,
                 'resolution': resolution,
                 'metadata': metadata,
+                'collection_id': collection_id,
                 'resolution_unit_id': resolution_unit_id
             },
             is_transaction=True
