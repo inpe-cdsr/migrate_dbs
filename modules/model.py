@@ -4,6 +4,7 @@ from json import dumps
 
 from pandas import read_sql, to_datetime
 import pymysql
+# from pymysql.constants import CLIENT
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -96,6 +97,12 @@ class PostgreSQLConnection():
             # the elements for connection are got by environment variables
             self.engine = create_engine('postgresql+psycopg2://')
 
+            # self.engine = create_engine(
+            #     (f'mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@'
+            #     f'{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}'),
+            #     connect_args={"client_flag": CLIENT.MULTI_STATEMENTS}
+            # )
+
         except SQLAlchemyError as error:
             logging.error(f'PostgreSQLConnection.__init__() - An error occurred during engine creation.')
             logging.error(f'PostgreSQLConnection.__init__() - error.code: {error.code} - error.args: {error.args}')
@@ -114,6 +121,10 @@ class PostgreSQLConnection():
                 with self.engine.begin() as connection:  # runs a transaction
                     connection.execute(query, params)
                 return
+
+                # query = text(query).execution_options(autocommit=True)
+                # # logging.info(f'DatabaseConnection.execute() - query: {query}\n')
+                # self.engine.execute(query, multi=True)
 
             # SELECT
             # with self.engine.connect() as connection:

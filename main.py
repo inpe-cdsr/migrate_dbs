@@ -46,6 +46,37 @@ def generate_collection_id_column(collection_name, df_collection):
     return collection.iloc[0]['id']
 
 
+def generate_insert_clause_column(row):
+    srid = 4326
+    min_x = row["bl_longitude"]
+    min_y = row["bl_latitude"]
+    max_x = row["tr_longitude"]
+    max_y = row["tr_latitude"]
+
+    metadata = {
+        # 'datetime': row["datetime"],
+        # 'date': row["date"],
+        'path': row["path"],
+        'row': row["row"],
+        'satellite': row["satellite"],
+        'sensor': row["sensor"],
+        # 'cloud_cover': row["cloud_cover"],
+        'sync_loss': row["sync_loss"],
+        'deleted': row["deleted"]
+    }
+
+    return (
+        'INSERT INTO bdc.items '
+        '(id, name, collection_id, start_date, end_date, '
+        'cloud_cover, assets, metadata, geom, min_convex_hull, srid) '
+        'VALUES '
+        f'({row["id"]}, \'{row["name"]}\', {row["collection_id"]}, \'{row["datetime"]}\', \'{row["datetime"]}\', '
+        f'{row["cloud_cover"]}, \'{row["assets"]}\', \'{dumps(metadata)}\', '
+        f'ST_MakeEnvelope({min_x}, {min_y}, {max_x}, {max_y}, {srid}), '
+        f'ST_MakeEnvelope({min_x}, {min_y}, {max_x}, {max_y}, {srid}), {srid});'
+    )
+
+
 class MigrateDBs():
 
     def __init__(self):
@@ -206,6 +237,11 @@ class MigrateDBs():
             lambda collection: generate_collection_id_column(collection, self.df_collection)
         )
 
+        # generate INSERT clause for each row
+        self.df_item['insert'] = self.df_item.apply(
+            generate_insert_clause_column, axis=1
+        )
+
         # delete unnecessary columns
         del self.df_item['thumbnail']
         # del self.df_item['collection']
@@ -224,6 +260,24 @@ class MigrateDBs():
             self.db_postgres.insert_into_items(**item._asdict())
             # logging.info(f'`{item.name}` item has been inserted in the database sucessfully!')
         logging.info(f'All items have been inserted in the database sucessfully!\n')
+
+        # # fill Download table by chunks
+        # step = 20000
+        # for start_slice in range(0, size_df_without_empty_values, step):
+        #     end_slice = start_slice + step
+        #     if end_slice > size_df_without_empty_values:
+        #         end_slice = size_df_without_empty_values
+
+        #     logging.info(f'start_slice: {start_slice} - end_slice: {end_slice}')
+
+        #     # concatenate the UPDATE clauses to execute many statetimes in one time
+        #     query_updates = ' '.join(df_df_without_empty_values[start_slice:end_slice]['update'].tolist())
+
+        #     # logging.info(f'query_updates: {query_updates} \n')
+        #     # logging.info(f'type query_updates: {type(query_updates)} \n')
+
+        #     logging.info(f'Executing `query_updates`...\n')
+        #     self.db.execute(query_updates, transaction=True)
 
     ##################################################
     # main
@@ -271,11 +325,11 @@ class MigrateDBs():
         logging.info('**************************************************')
 
         logging.info(f'df_collection: \n{self.df_collection} \n')
-        logging.info(f'df_item: \n{self.df_item[["name", "collection_id", "collection", "sync_loss", "assets"]].head()}\n')
+        logging.info(f'df_item: \n{self.df_item[["name", "collection_id", "collection", "insert"]].head()}\n')
 
-        self.__delete_from_tables()
-        self.__insert_df_collection_into_database()
-        self.__insert_df_item_into_database()
+        # self.__delete_from_tables()
+        # self.__insert_df_collection_into_database()
+        # self.__insert_df_item_into_database()
 
 
 if __name__ == "__main__":
