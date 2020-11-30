@@ -76,14 +76,22 @@ class MigrateDBs():
     def __save_dfs(self, collection_file_name='collection.csv', item_file_name='item.csv'):
         """Save the dataframes in CSV files"""
 
+        logging.info('**************************************************')
+        logging.info('*                   __save_dfs                   *')
+        logging.info('**************************************************')
+
         self.df_collection.to_csv(DATA_PATH + collection_file_name, index=False)
         self.df_item.to_csv(DATA_PATH + item_file_name, index=False)
 
-        logging.info(f'`{collection_file_name}` and `{item_file_name}`'
-                    ' files have been saved sucessfully!\n')
+        logging.info(f'`{collection_file_name}` and `{item_file_name}` '
+                      'files have been saved sucessfully!\n')
 
     def __delete_from_tables(self):
         """Clear the tables in the PostgreSQL database"""
+
+        logging.info('**************************************************')
+        logging.info('*              __delete_from_tables              *')
+        logging.info('**************************************************')
 
         self.db_postgres.delete_from_table('bdc.collections')
         self.db_postgres.delete_from_table('bdc.items')
@@ -212,9 +220,9 @@ class MigrateDBs():
         logging.info('*         __insert_df_item_into_database         *')
         logging.info('**************************************************')
 
-        for item in self.df_item[0:5].itertuples():
+        for item in self.df_item[0:10].itertuples():
             self.db_postgres.insert_into_items(**item._asdict())
-            logging.info(f'`{item.name}` item has been inserted in the database sucessfully!')
+            # logging.info(f'`{item.name}` item has been inserted in the database sucessfully!')
         logging.info(f'All items have been inserted in the database sucessfully!\n')
 
     ##################################################
@@ -222,6 +230,10 @@ class MigrateDBs():
     ##################################################
 
     def __main__get_dfs_configure_dfs_and_save_dfs(self):
+        logging.info('**************************************************')
+        logging.info('*                 main - settings                *')
+        logging.info('**************************************************')
+
         # delete and recreate `assets` folder
         delete_and_recreate_folder(DATA_PATH)
         logging.info(f'`{DATA_PATH}` folder has been recreated sucessfully!\n')
