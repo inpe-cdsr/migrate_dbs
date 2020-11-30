@@ -123,17 +123,21 @@ class MigrateDBs():
         logging.info(f'`{collection_file_name}` and `{item_file_name}` '
                       'files have been saved sucessfully!\n')
 
-    def __delete_from_tables(self):
+    def __clear_tables_in_the_database(self):
         """Clear the tables in the PostgreSQL database"""
 
         logging.info('**************************************************')
-        logging.info('*              __delete_from_tables              *')
+        logging.info('*         __clear_tables_in_the_database         *')
         logging.info('**************************************************')
 
-        self.db_postgres.delete_from_table('bdc.collections')
-        self.db_postgres.delete_from_table('bdc.items')
+        # tables to clear in the database
+        tables = ['bdc.collections', 'bdc.items', 'bdc.bands', 'bdc.resolution_unit']
 
-        logging.info(f'`collections` and `items` tables have been cleared sucessfully!\n')
+        for table in tables:
+            self.db_postgres.delete_from_table(table)
+            logging.info(f'`{table}` table has been cleared sucessfully!')
+
+        logging.info(f'All tables have been cleared in the database sucessfully!\n')
 
     ##################################################
     # df_resolution_unit and df_band
@@ -152,6 +156,16 @@ class MigrateDBs():
 
         logging.info(f'df_resolution_unit: \n{self.df_resolution_unit} \n')
         logging.info(f'df_band: \n{self.df_band} \n')
+
+    def __insert_df_resolution_into_database(self):
+        logging.info('**************************************************')
+        logging.info('*      __insert_df_resolution_into_database      *')
+        logging.info('**************************************************')
+
+        for resolution in self.df_resolution.itertuples():
+            logging.info(f'Inserting `{resolution.name}` resolution in the database...')
+            # self.db_postgres.insert_into_collections(**collection._asdict())
+        logging.info(f'All resolutions have been inserted in the database sucessfully!\n')
 
     ##################################################
     # df_collection
@@ -321,7 +335,6 @@ class MigrateDBs():
         self.__get_dfs_from_csv_files()
 
         # configure dataframes
-        self.__configure_dfs_resolution_and_band()
         self.__configure_df_collection()
         self.__configure_df_item()
 
@@ -332,13 +345,14 @@ class MigrateDBs():
         )
 
     def main(self):
-        self.__main__get_dfs_configure_dfs_and_save_dfs(is_to_get_dfs_from_db=True)
+        # self.__main__get_dfs_configure_dfs_and_save_dfs(is_to_get_dfs_from_db=False)
 
         self.__get_dfs_from_csv_files(
             collection_file_name='collection_configured.csv',
             item_file_name='item_configured.csv'
         )
 
+        self.__configure_dfs_resolution_and_band()
         self.__configure_df_collection__fix_columns_types()
         self.__configure_df_item__fix_columns_types()
 
@@ -349,7 +363,9 @@ class MigrateDBs():
         logging.info(f'df_collection: \n{self.df_collection} \n')
         logging.info(f'df_item: \n{self.df_item[["name", "collection_id", "collection", "insert"]].head()}\n')
 
-        self.__delete_from_tables()
+        self.__clear_tables_in_the_database()
+
+        # self.__insert_df_resolution_into_database()
         self.__insert_df_collection_into_database()
         self.__insert_df_item_into_database()
 

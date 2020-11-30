@@ -4,7 +4,6 @@ from json import dumps
 
 from pandas import read_sql, to_datetime
 import pymysql
-# from pymysql.constants import CLIENT
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -97,12 +96,6 @@ class PostgreSQLConnection():
             # the elements for connection are got by environment variables
             self.engine = create_engine('postgresql+psycopg2://')
 
-            # self.engine = create_engine(
-            #     (f'mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@'
-            #     f'{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}'),
-            #     connect_args={"client_flag": CLIENT.MULTI_STATEMENTS}
-            # )
-
         except SQLAlchemyError as error:
             logging.error(f'PostgreSQLConnection.__init__() - An error occurred during engine creation.')
             logging.error(f'PostgreSQLConnection.__init__() - error.code: {error.code} - error.args: {error.args}')
@@ -122,10 +115,6 @@ class PostgreSQLConnection():
                     connection.execute(query, params)
                 return
 
-                # query = text(query).execution_options(autocommit=True)
-                # # logging.info(f'DatabaseConnection.execute() - query: {query}\n')
-                # self.engine.execute(query, multi=True)
-
             # SELECT
             # with self.engine.connect() as connection:
             #     # safe code against SQL injection - https://realpython.com/prevent-python-sql-injection/
@@ -139,6 +128,38 @@ class PostgreSQLConnection():
             logging.error(f'PostgreSQLConnection.execute() - error: {error}\n')
 
             raise SQLAlchemyError(error)
+
+    ####################################################################################################
+    # RESOLUTION
+    ####################################################################################################
+
+    def insert_into_resolution(self, id=None, name=None, description=None, start_date=None, end_date=None,
+                               min_x=None, min_y=None, max_x=None, max_y=None, **kwards):
+
+        query = (
+            'INSERT INTO bdc.resolution_unit '
+            '(id, name, title, description, start_date, end_date, extent) '
+            'VALUES '
+            '(%(id)s, %(name)s, %(title)s, %(description)s, %(start_date)s, %(end_date)s, '
+            'ST_MakeEnvelope(%(min_x)s, %(min_y)s, %(max_x)s, %(max_y)s, 4326));'
+        )
+
+        self.execute(
+            query,
+            params={
+                'id': id,
+                'name': name,
+                'title': name,
+                'description': description,
+                'start_date': start_date,
+                'end_date': end_date,
+                'min_x': min_x,
+                'min_y': min_y,
+                'max_x': max_x,
+                'max_y': max_y
+            },
+            is_transaction=True
+        )
 
     ####################################################################################################
     # COLLECTION
