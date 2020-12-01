@@ -381,8 +381,16 @@ class MigrateDBs():
             item_file_name='item_configured.csv'
         )
 
+    def __main__clear_and_insert_values_in_the_database(self):
+        self.__clear_tables_in_the_database()
+
+        self.__insert_df_collection_into_database()
+        self.__insert_df_resolution_into_database()
+        self.__insert_df_sensor_into_database()
+        self.__insert_df_item_into_database()
+
     def main(self):
-        # self.__main__get_dfs_configure_dfs_and_save_dfs(is_to_get_dfs_from_db=False)
+        # self.__main__get_dfs_configure_dfs_and_save_dfs(is_to_get_dfs_from_db=True)
 
         self.__get_dfs_from_csv_files(
             collection_file_name='collection_configured.csv',
@@ -400,12 +408,7 @@ class MigrateDBs():
         logging.info(f'df_collection: \n{self.df_collection} \n')
         logging.info(f'df_item: \n{self.df_item[["name", "collection_id", "collection", "insert"]].head()}\n')
 
-        self.__clear_tables_in_the_database()
-
-        self.__insert_df_collection_into_database()
-        self.__insert_df_resolution_into_database()
-        self.__insert_df_sensor_into_database()
-        # self.__insert_df_item_into_database()
+        self.__main__clear_and_insert_values_in_the_database()
 
 
 if __name__ == "__main__":
